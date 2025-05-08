@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<div class="header">
+    <div class="logo-block">
+        <img src="{% static 'img/лого.png' %}" class="logo">
+    </div>
+
+    <div class="icons">
+        <a href="{% url 'home' %}"><img src="{% static 'img/home.png' %}" alt="Главная страница"></a>
+    </div>
+
+    <div class="search-of-parametrs">
+        <span>поиск по параметрам</span>
+        <img src="{% static 'img/параметры.png' %}" class="parametr-icon">
+    </div>
+    
+    <div class="search-of-parametrs-search">
+        <input type="text" placeholder="поиск" class="search-input">
+        <img src="{% static 'img/поиск.png' %}" class="search-icon">
+    </div>
+
+    <div class="icons">
+        {% if user.is_authenticated %}
+            <a href="{% url 'artwork_list' %}"><img src="{% static 'img/избранное.png' %}" alt="Избранное"></a>
+            <a href="#"><img src="{% static 'img/корзина.png' %}" alt="Корзина"></a>
+            <a href="#"><img src="{% static 'img/user.png' %}" alt="Личный кабинет"></a>
+            <a href="#"><img src="{% static 'img/уведомления.png' %}" alt="Уведомления"></a>
+            <a href="{% url 'logout' %}">Выйти</a>
+        {% else %}
+            <a href="{% url 'login' %}">Войти</a>
+            <a href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="catalog">
+    <a href="#" class="catalog-button">Живопись</a>
+    <a href="#" class="catalog-button">Керамика</a>
+    <a href="#" class="catalog-button">Скульптура</a>
+    <a href="#" class="catalog-button">Художники</a>
+</div>
+
+<div class="tops">
+    <div class="image-container">
+        <a href="#"><img src="{% static 'img/современная живопись.jpg' %}" alt="Современная живопись" class="image"></a>
+        <h2 class="image-text">Современная живопись</h2>
+    </div>
+    
+    <div class="image-container">
+        <a href="#"><img src="{% static 'img/идеи для подарка.jpg' %}" alt="Идеи для подарка" class="image"></a>
+        <h2 class="image-text">Идеи для подарка</h2>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Новинки месяца ↓</h3>
+    <div class="card">
+        {% for artwork in new_artworks %}
+        <div class="art-card">
+            <img src="{{ artwork.image.url }}" alt="{{ artwork.title }}" />
+            <div class="card-footer">
+                <span class="title">{{ artwork.title }}</span>
+                <span class="heart" onclick="toggleFavorite({{ artwork.id }}, this)">&#9825;</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="section">
+    <h3>Геометрическая абстракция ↓</h3>
+    <div class="scroll-container">
+        {% for artwork in featured_artworks %}
+        <div class="art-card">
+            <img src="{{ artwork.image.url }}" alt="{{ artwork.title }}">
+            <div>{{ artwork.title }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<footer style="background: #ddd; padding: 20px;">
+    <div class="footer-conteiner">
+        <div class="footer-block-top">
+            <img src="{% static 'img/лого.png' %}" class="logo" style="margin-right: 500px;">
+            <a href="{% url 'add_artwork' %}" style="padding: 8px 12px; background: #ccc; border: none; font-weight: bold; cursor: pointer; text-decoration: none; color: black;">
+                Разместить работу +
+            </a>
+        </div>
+
+        <div class="footer-block-bottom">
+            <div style="margin-right: 520px;">
+                <h3 style="margin: 0 0 10px;">О нас</h3>
+            </div>
+
+            <div style="margin-right: 520px;">
+                <h3 style="margin: 0 0 10px;">Каталог</h3>
+                <div>Живопись</div>
+                <div>Керамика</div>
+                <div>Скульптура</div>
+                <div>Художники</div>
+            </div>
+
+            <div>
+                <h3 style="margin: 0 0 10px;">Обратная связь</h3>
+                <a href="{% url 'contact' %}">Связаться с нами</a>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: #bbb; text-align: center; padding: 10px; margin-top: 20px; width: 1380px;">
+        ©Все на этом сайте защищено
+    </div>
+</footer>
+
+<script>
+function toggleFavorite(artworkId, element) {
+    fetch(`/artwork/${artworkId}/favorite/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'added') {
+            element.innerHTML = '&#10084;';
+            element.classList.add('liked');
+        } else {
+            element.innerHTML = '&#9825;';
+            element.classList.remove('liked');
+        }
+    });
+}
+</script>
+{% endblock %}
